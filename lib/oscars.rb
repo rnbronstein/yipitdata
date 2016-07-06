@@ -1,5 +1,4 @@
 require 'json'
-require 'open-uri'
 
 class OscarData
   attr_reader :data
@@ -71,8 +70,8 @@ class Budget
     until formatted?
       @budget = self.convert_millions if budget =~ /\bmillion\b/
       @budget = self.strip_footnotes if budget =~ /\D/
-      # this reformatting ignores the difference between euros and USD; because this exchange rate has varied, it is programatically expensive to calculate the exact USD of a budget in euros for a given year
-      #while it is inaccurate to assume a 1:1 exchange between the euro and the dollar, doing so allows the script to run without including a library of exchange rates or scraping a historical conversion tool online
+      # this reformatting ignores the difference between GBP and USD; because this exchange rate has varied, it is programatically expensive to calculate the exact USD of a budget in GBP for a given year
+      # while it is inaccurate to assume a 1:1 exchange between the GBP and the dollar, doing so allows the script to run without including a library of exchange rates or scraping a historical conversion tool online
     end
     @budget
   end
@@ -132,6 +131,6 @@ class Result
 
   private
   def format_budget(budget)
-    "$#{budget.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse}" #to make things more human-readable
+    budget.is_a?(Integer) ? "$#{budget.to_s.reverse.gsub(/...(?=.)/,'\&,').reverse}" : budget #to make things more human-readable
   end
 end

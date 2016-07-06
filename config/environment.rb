@@ -1,9 +1,5 @@
 require 'bundler/setup'
-Bundler.require(:default, :development)
+Bundler.require(:default)
 $: << '.'
 
 Dir["lib/*.rb"].each {|f| require f}
-
-
-require "open-uri"
-require "json"
