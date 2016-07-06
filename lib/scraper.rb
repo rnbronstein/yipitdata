@@ -47,7 +47,8 @@ class Film
   end
 
   def title
-    film['Film']
+    film_title = film['Film']
+    film_title.gsub(/(\[\w\])/, '').gsub(/\s\s/,'')
   end
 
   def budget
@@ -60,7 +61,7 @@ class Film
 
 end
 
-class Budget < Film
+class Budget
   attr_accessor :budget
 
   def initialize(budget)
@@ -109,7 +110,7 @@ class Budget < Film
   end
 end
 
-class Results
+class Result
   attr_accessor :results
 
   def initialize(results)
@@ -117,7 +118,16 @@ class Results
   end
 
   def average
-    budgets = results.collect{|hash| hash['budget'] if hash['budget'].is_a?(Integer)}
-    budgets.inject{|sum, num|  }
+    binding.pry
+    budgets = results.collect{ |hash| hash[:budget] if hash[:budget].is_a?(Integer) }
+    binding.pry
+    budgets.inject{ |sum, num| sum + num }.to_f / budgets.size
   end
+
+  def print_results
+    results.each do |hash|
+      puts "#{hash[:year]}-#{hash[:title]}-#{hash[:budget]}"
+    end
+  end
+
 end

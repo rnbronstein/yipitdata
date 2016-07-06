@@ -1,3 +1,10 @@
 #!/usr/bin/env ruby
 
 require_relative '../config/environment'
+
+result_data = OscarData.new.results
+result = Result.new(result_data)
+
+puts "The average budget of an Oscar-winning film is #{result.average}"
+
+result.print_results

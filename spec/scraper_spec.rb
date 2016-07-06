@@ -8,16 +8,9 @@ describe 'OscarData' do
   end
 
   it 'collects all Oscar winners' do
-    expect(oscar_data.results.first).to have_key("1927 / 28 [A]  (1st)")
+    expect(oscar_data.results.first).to eq({:year=>"1927 / 28 (1st)", :title=>"Wings", :budget=>2000000})
   end
-
-  # it 'lists all the budgets' do
-  #   expect(oscar_data.all_budgets).to include('$3.85 million')
-  # end
-end
-
-describe 'Film' do
-  let!(:film){Film.new({"Detail URL" => "http://oscars.yipitdata.com/films/Gone_with_the_Wind_(film)"})}
+  
 end
 
 describe 'Budget' do
@@ -51,4 +44,14 @@ describe 'Budget' do
     budget_5.reformat
     expect(budget_5.budget).to eq(3000000)
   end
+end
+
+describe 'Results' do
+  let!(:data){OscarData.new.results}
+  let!(:result){Result.new(data)}
+
+  it 'calculates the average budget' do
+    expect(result.average).to be_truthy
+  end
+
 end
