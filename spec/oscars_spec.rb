@@ -10,7 +10,7 @@ describe 'OscarData' do
   it 'collects all Oscar winners' do
     expect(oscar_data.results.first).to eq({:year=>"1927 / 28 (1st)", :title=>"Wings", :budget=>2000000})
   end
-  
+
 end
 
 describe 'Budget' do
@@ -51,7 +51,7 @@ describe 'Results' do
   let!(:result){Result.new(data)}
 
   it 'calculates the average budget' do
-    expect(result.average).to be_truthy
+    expect(result.average).to eq('$2,913,023') #this is a bit of a silly test as I got this information from my own calculations
   end
 
 end

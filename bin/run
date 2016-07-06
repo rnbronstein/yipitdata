@@ -2,9 +2,8 @@
 
 require_relative '../config/environment'
 
-result_data = OscarData.new.results
-result = Result.new(result_data)
-
-puts "The average budget of an Oscar-winning film is #{result.average}"
-
+puts "Hello, YipitData! \n\n"
+puts 'Just a minute while I retrieve data...'
+result = Result.new(OscarData.new.results)
 result.print_results
+puts "\n\nAverage Budget: " + result.average
