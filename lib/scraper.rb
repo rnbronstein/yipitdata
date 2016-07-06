@@ -1,60 +1,37 @@
-  #The challenge is to write a script to go the main API page, follow the “Detail URL” link for each year’s winner, grab the budget, and print out each Year-Title-Budget combination. After printing each combination, it should print the average budget of all the winners at the end.
-
-
-    #visit page
-    #each year has the following structure:
-      # {year: [films: {url, film, producer, wiki, winner?}, film:...]}
-      #for each year, iterate through array
-      #visit detail url for each object if it has "winner" status
-        # detail url looks like: {......."budget": 'budget'....}
-    # iterate through all years to retrieve all information
-    #create new hash: {year: {title: 'title', budget: 'budget'}, ...}
-    # for each object in hash, print Year-Title-Budget
-
-    #collect all budgets
-    #return avg of collection
-
 require 'json'
 require 'open-uri'
 
-class Scraper
+class OscarData
   attr_reader :data
 
   def initialize
     @data = JSON.parse(RestClient.get('oscars.yipitdata.com'))
   end
 
-  def winner_hash
-    hash = {}
+  def results
+    array = []
     data['results'].each do |year_information|
-      year_information['films'].collect do |film|
+      year_information['films'].each do |film|
+        year = format_year(year_information['year'])
         film_obj = Film.new(film)
-        hash[year_information['year']] = film if film_obj.winner?
-        # hash[year_information['year']] = film if winner?(film)
+        if film_obj.winner?
+          array << {
+            year: year,
+            title: film_obj.title,
+            budget: film_obj.budget
+          }
+        end
       end
     end
-    hash
+    array
   end
 
-  #I wrote this method to get a better look at how the budgets were formatted (also to test budget retrieval in my specs)
-  # def all_budgets
-  #   budgets = []
-  #   winner_hash.each do |year, info|
-  #     url = info['Detail URL']
-  #     winner_detail = JSON.parse(RestClient.get(url))
-  #     budgets << winner_detail['Budget'] if winner_detail['Budget']
-  #   end
-  #   puts budgets
-  #   budgets
-  # end
-
-  # private
-  # def winner?(film)
-  #   film['Winner'] == true
-  # end
-
+  private
+  def format_year(year)
+    no_notes = year.gsub(/(\[\w\])/, '')
+    no_notes.gsub(/\s\s/, '')
+  end
 end
-
 
 class Film
 
@@ -69,19 +46,78 @@ class Film
     JSON.parse(RestClient.get(film_url))
   end
 
-  def convert_millions
-    @budget = film_details['Budget']
-    match_data = @budget.match(/(?:\$)(?<first>\d)(?:\.)?(?<second>\d)?(?<third>\d)?/)
-    digits = Array.new(6, 0)
-    digits.map.with_index(1) do |num, index|
-      match_data[index] ? digits[index - 1] = match_data[index].to_i : digits[index - 1] = 0
-    end
-    digits.join.to_i
+  def title
+    film['Film']
+  end
+
+  def budget
+    film_details['Budget'] ? Budget.new(film_details['Budget']).reformat : 'Not available'
   end
 
   def winner?
     film['Winner'] == true
   end
 
+end
 
+class Budget < Film
+  attr_accessor :budget
+
+  def initialize(budget)
+    @budget = budget
+  end
+
+  def reformat
+    until formatted?
+      @budget = self.convert_millions if budget =~ /\bmillion\b/
+      @budget = self.strip_footnotes if budget =~ /\D/
+      # this conversion ignores the difference between euros and USD; because this exchange rate has varied, it is programatically expensive to calculate the exact USD of a budget in euros for a given year
+      #while it is inaccurate to assume a 1:1 exchange between the euro and the dollar, doing so allows the script to run without including a library of exchange rates or scraping a historical conversion tool online
+    end
+    @budget
+  end
+
+  def convert_millions
+    strip_beginning_chars
+    budget.match(/-/) ? budget_calc = average_from_range : budget_calc = budget
+    match_data = budget_calc.match(/(\d)(?:\.)?(\d)?(\d)?(\d)?/)
+    digits = Array.new(7, 0)
+    digits.map.with_index(1) do |num, index|
+      match_data[index] ? digits[index - 1] = match_data[index].to_i : digits[index - 1] = 0
+    end
+    digits.join.to_i
+  end
+
+  def strip_footnotes
+    budget.gsub(/(\[\s\d\s\])|\D|\W/, '').to_i
+  end
+
+
+  private
+  def formatted?
+    true if budget !~ /\D/
+  end
+
+  def strip_beginning_chars
+    budget.gsub(/\b\d.*/, '')
+  end
+
+  def average_from_range
+    match_data = budget.match(/(\d)-(\d)/)
+    avg = (match_data[1].to_i + match_data[2].to_i).to_f / 2
+    avg.to_s
+  end
+end
+
+class Results
+  attr_accessor :results
+
+  def initialize(results)
+    @results = results
+  end
+
+  def average
+    budgets = results.collect{|hash| hash['budget'] if hash['budget'].is_a?(Integer)}
+    budgets.inject{|sum, num|  }
+  end
 end
