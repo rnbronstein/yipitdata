@@ -8,7 +8,7 @@ describe 'OscarData' do
   end
 
   it 'collects all Oscar winners' do
-    expect(oscar_data.results.first).to eq({:year=>"1927 / 28 (1st)", :title=>"Wings", :budget=>2000000})
+    expect(oscar_data.results.first).to eq({:year=>"1927/28(1st)", :title=>"Wings", :budget=>2000000})
   end
 
 end
